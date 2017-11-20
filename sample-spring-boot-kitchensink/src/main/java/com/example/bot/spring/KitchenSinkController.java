@@ -102,7 +102,49 @@ public class KitchenSinkController {
 		TextMessageContent message = event.getMessage();
 		handleTextContent(event.getReplyToken(), event, message);
 	}
-	
+
+	@EventMapping
+	public void handleStickerMessageEvent(MessageEvent<StickerMessageContent> event) {
+		handleSticker(event.getReplyToken(), event.getMessage());
+	}
+
+	@EventMapping
+	public void handleLocationMessageEvent(MessageEvent<LocationMessageContent> event) {
+		LocationMessageContent locationMessage = event.getMessage();
+		reply(event.getReplyToken(), new LocationMessage(locationMessage.getTitle(), locationMessage.getAddress(),
+				locationMessage.getLatitude(), locationMessage.getLongitude()));
+	}
+
+	@EventMapping
+	public void handleImageMessageEvent(MessageEvent<ImageMessageContent> event) throws IOException {
+		final MessageContentResponse response;
+		String replyToken = event.getReplyToken();
+		String messageId = event.getMessage().getId();
+		try {
+			response = lineMessagingClient.getMessageContent(messageId).get();
+		} catch (InterruptedException | ExecutionException e) {
+			reply(replyToken, new TextMessage("Cannot get image: " + e.getMessage()));
+			throw new RuntimeException(e);
+		}
+		DownloadedContent jpg = saveContent("jpg", response);
+		reply(((MessageEvent) event).getReplyToken(), new ImageMessage(jpg.getUri(), jpg.getUri()));
+
+	}
+
+	@EventMapping
+	public void handleAudioMessageEvent(MessageEvent<AudioMessageContent> event) throws IOException {
+		final MessageContentResponse response;
+		String replyToken = event.getReplyToken();
+		String messageId = event.getMessage().getId();
+		try {
+			response = lineMessagingClient.getMessageContent(messageId).get();
+		} catch (InterruptedException | ExecutionException e) {
+			reply(replyToken, new TextMessage("Cannot get image: " + e.getMessage()));
+			throw new RuntimeException(e);
+		}
+		DownloadedContent mp4 = saveContent("mp4", response);
+		reply(event.getReplyToken(), new AudioMessage(mp4.getUri(), 100));
+	}
 
 	@EventMapping
 	public void handleUnfollowEvent(UnfollowEvent event) {
@@ -175,6 +217,9 @@ public class KitchenSinkController {
 	}
 
 
+	private void handleSticker(String replyToken, StickerMessageContent content) {
+		reply(replyToken, new StickerMessage(content.getPackageId(), content.getStickerId()));
+	}
 	
 	private void appendText(List<Message> lst, String str) throws Exception {
 		if (str.length() > 0) {
@@ -191,7 +236,6 @@ public class KitchenSinkController {
 		log.info("Got text message from {}: {}", replyToken, text);
 		List<Message> messageList = new ArrayList<Message>();
         switch (command[0].toLowerCase()) {
-       
         	case "help":{
     		try {
         		String result1 = "Welcome to this bot! Here are our supported commands, all of them are case-insensitive.\n\n" + 

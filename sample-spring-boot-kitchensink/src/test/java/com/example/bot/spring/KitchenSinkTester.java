@@ -8,7 +8,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.io.InputStream;
-import java.time.Instant;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -39,23 +38,22 @@ import com.linecorp.bot.model.event.message.MessageContent;
 import com.linecorp.bot.model.event.message.TextMessageContent;
 import com.linecorp.bot.model.message.TextMessage;
 import com.linecorp.bot.spring.boot.annotation.LineBotMessages;
-import com.linecorp.bot.model.event.source.*;
 
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 import com.example.bot.spring.DatabaseEngine;
 import com.example.bot.spring.SQLDatabaseEngine;
-import com.example.bot.spring.KitchenSinkController;
 
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = { KitchenSinkTester.class, KitchenSinkController.class})
+@SpringBootTest(classes = { KitchenSinkTester.class, SQLDatabaseEngine.class})
 public class KitchenSinkTester {
 	@Autowired
-	private KitchenSinkController kitchensinkcontroller;
+	//private DatabaseEngine databaseEngine;
+	private SQLDatabaseEngine sqldatabaseEngine;
 	
-	/*
+
 	//Water------------------------------
 	@Test
 	public void testWaterInvalidInput() throws Exception {
@@ -751,7 +749,7 @@ public class KitchenSinkTester {
 		assertThat(!thrown).isEqualTo(false);
 	} 	
 	
-	*//*
+	*/
 //-------------------Order
 	@Test
 	public void testOrderNewUser() throws Exception {
@@ -872,7 +870,7 @@ public class KitchenSinkTester {
 		
 		assertThat(!thrown).isEqualTo(true);
 		assertThat(result.contains("What type of food do you like to choose")).isEqualTo(true);
-	}*/
+	}
 
 	@Test
 	public void testOrderCorrectOutputWithInvalidDecision3() throws Exception {
@@ -890,4 +888,6 @@ public class KitchenSinkTester {
 		assertThat(result.contains("Are you vegetarian")).isEqualTo(true);
 	}
 	
+
+
 }
